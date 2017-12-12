@@ -23,6 +23,7 @@ class OneTimeSolver:
             result = result * (rules.MAX_ITEM_COUNT + 1) + sta[i]
         return result
 
+
     def solve(self, sta):
         code = self.status_encode(sta)
         if code in self.cache:
@@ -97,6 +98,14 @@ class MajhongSolver:
                 second_dp_result = self.__second_dp(tmp_arr, add_count)
                 best = min(second_dp_result, best)
         return best
+
+    @classmethod
+    def count_color(cls, colors):
+        result = 0
+        for color in colors:
+            if sum(color) > 0:
+                result += 1
+        return result
 
 if __name__ == '__main__':
     solver = MajhongSolver()
