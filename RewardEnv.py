@@ -36,7 +36,7 @@ class RewardEnv:
         return -1
 
     def step(self, action):
-        action_tuple = (action / 9, action % 9)
+        action_tuple = (action // 9, action % 9)
         self.game.drop_and_take_item(action_tuple)
         observe = self.__change_colors_to_vector(self.game.hand_item)
         if rules.finish_check(self.game.hand_item):

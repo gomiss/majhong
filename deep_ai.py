@@ -142,11 +142,11 @@ def main():
             observation, done, reward = majhong_env.step(action)
 
             if done:
-                print 'Episode {}, iterations: {}, reward: {}'.format(
+                print('Episode {}, iterations: {}, reward: {}'.format(
                     episode,
                     iteration,
                     reward
-                )
+                ))
 
                 reward = -200
                 replay.add(old_observation, action, reward, None)
