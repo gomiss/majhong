@@ -47,6 +47,7 @@ class RewardEnv:
         finished = False
         if not self.game.has_other_items():
             finished = True
+        self.status = (score_after, color_count_after)
         return observe, finished, reward
 
     def get_valid_actions(self):
@@ -59,7 +60,14 @@ class RewardEnv:
                 now_index += 1
         return result
 
+    def get_score_tuple(self):
+        return (self.solver.solve(self.game.hand_item), self.solver.count_color(self.game.hand_item))
 
-
+    def get_color_number(self):
+        result = []
+        for i in range(3):
+            result.append(sum(self.game.hand_item[i]))
+        result = sorted(result)
+        return '-'.join(map(lambda x:str(x), result))
 
 

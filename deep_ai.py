@@ -17,7 +17,7 @@ NUM_EPOCHS = 50
 
 GAMMA = 0.99
 REPLAY_MEMORY_SIZE = 1000
-NUM_EPISODES = 10000
+NUM_EPISODES = 1000000
 TARGET_UPDATE_FREQ = 100
 MINIBATCH_SIZE = 32
 
@@ -66,9 +66,9 @@ def predict(model, observation):
 
 def get_model():
     model = Sequential()
-    model.add(Dense(16, input_shape=(OBSERVATIONS_DIM,), activation='relu'))
-    model.add(Dense(16, input_shape=(OBSERVATIONS_DIM,), activation='relu'))
-    model.add(Dense(27, activation='linear'))
+    model.add(Dense(64, input_shape=(OBSERVATIONS_DIM,), activation='relu'))
+    model.add(Dense(64, input_shape=(OBSERVATIONS_DIM,), activation='relu'))
+    model.add(Dense(27, activation='softmax'))
 
     model.compile(
         optimizer=Adam(lr=LEARNING_RATE),
@@ -142,10 +142,13 @@ def main():
             observation, done, reward = majhong_env.step(action)
 
             if done:
-                print('Episode {}, iterations: {}, reward: {}'.format(
+                final_score_tuple = majhong_env.get_score_tuple()
+                print('Episode {}, iterations: {}, reward: {}, score : {} color : {}'.format(
                     episode,
                     iteration,
-                    reward
+                    reward,
+                    final_score_tuple[0],
+                    majhong_env.get_color_number()
                 ))
 
                 reward = -200
