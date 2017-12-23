@@ -13,9 +13,7 @@ OBSERVATIONS_DIM = 27
 MAX_ITERATIONS = 10 ** 6
 LEARNING_RATE = 0.001
 
-NUM_EPOCHS = 50
-
-GAMMA = 0.99
+GAMMA = 0.5
 REPLAY_MEMORY_SIZE = 1000
 NUM_EPISODES = 1000000
 TARGET_UPDATE_FREQ = 100
@@ -23,6 +21,7 @@ MINIBATCH_SIZE = 32
 
 RANDOM_ACTION_DECAY = 0.99
 INITIAL_RANDOM_ACTION = 1
+EPISODES_STATISTIC_COUNT = 100
 
 
 class ReplayBuffer():
@@ -66,9 +65,9 @@ def predict(model, observation):
 
 def get_model():
     model = Sequential()
-    model.add(Dense(64, input_shape=(OBSERVATIONS_DIM,), activation='relu'))
-    model.add(Dense(64, input_shape=(OBSERVATIONS_DIM,), activation='relu'))
-    model.add(Dense(27, activation='softmax'))
+    model.add(Dense(150, input_shape=(OBSERVATIONS_DIM,), activation='relu'))
+    model.add(Dense(150, input_shape=(OBSERVATIONS_DIM,), activation='relu'))
+    model.add(Dense(27, activation='linear'))
 
     model.compile(
         optimizer=Adam(lr=LEARNING_RATE),
@@ -118,13 +117,16 @@ def main():
 
     majhong_env = RewardEnv.RewardEnv()
 
+    pre_avg = -233
+    part_sum = 0.0
 
     for episode in range(NUM_EPISODES):
         observation = majhong_env.reset()
+        sum_reward = 0.0
 
         for iteration in range(MAX_ITERATIONS):
             random_action_probability *= RANDOM_ACTION_DECAY
-            random_action_probability = max(random_action_probability, 0.1)
+            random_action_probability = max(random_action_probability, 0.01)
             old_observation = observation
 
             valid_actions = majhong_env.get_valid_actions()
@@ -138,20 +140,22 @@ def main():
                 for x in valid_actions:
                     if action == -1 or q_values[x] > q_values[action]:
                         action = x
+                # print q_values[action]
 
             observation, done, reward = majhong_env.step(action)
+            sum_reward = sum_reward * GAMMA + reward
+            # print('reward= %d' % reward)
 
             if done:
                 final_score_tuple = majhong_env.get_score_tuple()
-                print('Episode {}, iterations: {}, reward: {}, score : {} color : {}'.format(
+                print('Episode %d iterations: %d sum_reward: %.2f score: %d color: %s avg:%.2f' % (
                     episode,
                     iteration,
-                    reward,
+                    sum_reward,
                     final_score_tuple[0],
-                    majhong_env.get_color_number()
+                    majhong_env.get_color_number(),
+                    pre_avg
                 ))
-
-                reward = -200
                 replay.add(old_observation, action, reward, None)
                 break
 
@@ -165,6 +169,10 @@ def main():
                 # if steps_until_reset == 0:
                 #   target_model.set_weights(action_model.get_weights())
                 #   steps_until_reset = TARGET_UPDATE_FREQ
+        part_sum += sum_reward
+        if episode % EPISODES_STATISTIC_COUNT == EPISODES_STATISTIC_COUNT - 1:
+            pre_avg = part_sum / EPISODES_STATISTIC_COUNT
+            part_sum = 0.0
 
 
 if __name__ == "__main__":

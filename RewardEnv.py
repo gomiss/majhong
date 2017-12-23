@@ -35,6 +35,7 @@ class RewardEnv:
                 return -50
         return -1
 
+
     def step(self, action):
         action_tuple = (action // 9, action % 9)
         self.game.drop_and_take_item(action_tuple)
@@ -48,6 +49,9 @@ class RewardEnv:
         if not self.game.has_other_items():
             finished = True
         self.status = (score_after, color_count_after)
+        if finished:
+            reward = self.__calc_final_reward()
+
         return observe, finished, reward
 
     def get_valid_actions(self):
@@ -69,5 +73,18 @@ class RewardEnv:
             result.append(sum(self.game.hand_item[i]))
         result = sorted(result)
         return '-'.join(map(lambda x:str(x), result))
+
+    # 摸完牌还没胡
+    def __calc_final_reward(self):
+        result = []
+        for i in range(3):
+            result.append(sum(self.game.hand_item[i]))
+        result = sorted(result)
+        if result[0] > 1:
+            return -2000  # 花猪
+        return -100 * (self.status[0] + 1) # 换牌数，已下叫为0
+
+
+
 
 
